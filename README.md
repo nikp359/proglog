@@ -1,3 +1,3 @@
 # proglog
 
-Repository for Distributed services with Go course
+Repository for Distributed Log services with Go

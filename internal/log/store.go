@@ -7,9 +7,7 @@ import (
 	"sync"
 )
 
-var (
-	enc = binary.BigEndian
-)
+var enc = binary.BigEndian
 
 const (
 	lenWidth = 8
