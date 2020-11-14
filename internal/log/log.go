@@ -8,6 +8,8 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+
+	api "github.com/nikp359/proglog/api/v1"
 )
 
 const (
@@ -63,6 +65,22 @@ func NewLog(dir string, c Config) (*Log, error) {
 	return l, nil
 }
 
+func (l *Log) Append(record *api.Record) (uint64, error) {
+	l.mu.Lock()
+	defer l.mu.Unlock()
+
+	off, err := l.activeSegment.Append(record)
+	if err != nil {
+		return 0, err
+	}
+
+	if l.activeSegment.IsMaxed() {
+		err = l.newSegment(off + 1)
+	}
+
+	return 0, err
+}
+
 func (l *Log) newSegment(off uint64) error {
 	s, err := newSegment(l.Dir, off, l.Config)
 	if err != nil {
@@ -74,7 +92,8 @@ func (l *Log) newSegment(off uint64) error {
 }
 
 func getBaseOffset(files []os.FileInfo) []uint64 {
-	var baseOffset []uint64
+	baseOffset := make([]uint64, 0)
+
 	for _, file := range files {
 		offStr := strings.TrimSuffix(
 			file.Name(),
